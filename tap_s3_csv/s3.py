@@ -16,7 +16,7 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 from singer import get_logger, utils
 from singer_encodings.csv import (  # pylint:disable=no-name-in-module
-    SDC_EXTRA_COLUMN,
+#    SDC_EXTRA_COLUMN,
     get_row_iterator,
 )
 
@@ -119,7 +119,7 @@ def get_sampled_schema_for_table(config: Dict, table_spec: Dict) -> Dict:
         SDC_SOURCE_BUCKET_COLUMN: {"type": "string"},
         SDC_SOURCE_FILE_COLUMN: {"type": "string"},
         SDC_SOURCE_LINENO_COLUMN: {"type": "integer"},
-        SDC_EXTRA_COLUMN: {"type": "array", "items": {"type": "string"}},
+#        SDC_EXTRA_COLUMN: {"type": "array", "items": {"type": "string"}},
     }
 
     data_schema = generate_schema(samples, table_spec)
@@ -210,8 +210,8 @@ def sample_file(
     for row in iterator:
         has_rows = True
         if (current_row % sample_rate) == 0:
-            if row.get(SDC_EXTRA_COLUMN):
-                row.pop(SDC_EXTRA_COLUMN)
+#            if row.get(SDC_EXTRA_COLUMN):
+#                row.pop(SDC_EXTRA_COLUMN)
             sampled_row_count += 1
             if (sampled_row_count % 200) == 0:
                 LOGGER.info(
