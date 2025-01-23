@@ -105,7 +105,7 @@ def do_sync_run(config: Dict, catalog: Dict, state: Dict) -> None:
     """
     LOGGER.info("Starting sync.")
     if catalog is None:
-        do_discover(config: Dict)
+        do_discover(config)
         try:
             with open('catalog.json', 'r', encoding='utf-8') as f:
                 catalog = ujson.load(f)
