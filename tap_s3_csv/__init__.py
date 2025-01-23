@@ -45,7 +45,7 @@ def stream_is_selected(meta_data: Dict) -> bool:
     :param meta_data: stream metadata
     :return: True if selected, False otherwise
     """
-    return meta_data.get((), {}).get("selected", False)
+    return meta_data.get((), {}).get("selected", True)
 
 
 def do_sync(config: Dict, catalog: Dict, state: Dict) -> None:
