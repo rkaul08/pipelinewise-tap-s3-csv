@@ -157,7 +157,7 @@ def sync_table_file(
             LOGGER.info('Synced %d records from "%s"', records_synced, s3_path)
             last_logged = records_synced
 
-        if records_synced != last_logged:
+    if records_synced != last_logged:
         LOGGER.info('Completed syncing "%s" (%d records)', s3_path, records_synced)
 
     return records_synced
