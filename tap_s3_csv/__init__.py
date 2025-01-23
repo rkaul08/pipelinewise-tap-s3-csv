@@ -95,6 +95,56 @@ def do_sync(config: Dict, catalog: Dict, state: Dict) -> None:
     LOGGER.info("Done syncing.")
 
 
+def do_sync_run(config: Dict, catalog: Dict, state: Dict) -> None:
+    """
+    Syncs every selected stream in the catalog and updates the state designed for meltano run functionality
+    :param config: connection and streams information
+    :param catalog: Streams catalog
+    :param state: current state
+    :return: Nothing
+    """
+    LOGGER.info("Starting sync.")
+    if catalog is None:
+        try:
+            with open('catalog.json', 'r', encoding='utf-8') as f:
+                catalog = ujson.load(f)
+            LOGGER.info("Successfully loaded catalog from catalog.json")
+        except Exception as e:
+            LOGGER.error(f"Failed to load catalog file: {str(e)}")
+            raise
+            
+    if state is None:
+        state = {}
+
+    for stream in catalog["streams"]:
+        stream_name = stream["tap_stream_id"]
+        mdata = metadata.to_map(stream["metadata"])
+        try:
+            table_spec = next(
+                s
+                for s in config["tables"]
+                if s["table_name"] + config.get("table_suffix", "")
+                == stream_name
+            )
+        except StopIteration as err:
+            if not config.get("warning_if_no_files", False):
+                raise Exception(
+                    f"Expected table {stream_name} not found in catalog"
+                ) from err
+        if not stream_is_selected(mdata):
+            LOGGER.info("%s: Skipping - not selected", stream_name)
+            continue
+
+        singer.write_state(state)
+        key_properties = metadata.get(mdata, (), "table-key-properties")
+        singer.write_schema(stream_name, stream["schema"], key_properties)
+
+        LOGGER.info("%s: Starting sync", stream_name)
+        counter_value = sync_stream(config, state, table_spec, stream)
+        LOGGER.info("%s: Completed sync (%s rows)", stream_name, counter_value)
+
+    LOGGER.info("Done syncing.")
+
 @singer.utils.handle_top_exception(LOGGER)
 def main() -> None:
     """
@@ -122,6 +172,8 @@ def main() -> None:
         do_discover(args.config)
     elif args.properties:
         do_sync(config, args.properties, args.state)
+    else:
+        do_sync_run(config, args.properties, args.state)
 
 
 if __name__ == "__main__":
