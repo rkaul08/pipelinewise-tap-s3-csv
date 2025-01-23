@@ -35,7 +35,14 @@ def do_discover(config: Dict) -> None:
             raise Exception("No streams found")
     else:
         catalog = {"streams": streams}
-        ujson.dump(catalog, sys.stdout, indent=2)
+
+        try:
+            with open('catalog.json', 'w', encoding='utf-8') as f:
+                ujson.dump(catalog, f, indent=2)
+            LOGGER.info("Successfully wrote catalog to catalog.json")
+        except Exception as e:
+            LOGGER.error(f"Failed to write catalog file: {str(e)}")
+            raise
         LOGGER.info("Finished discover")
 
 
