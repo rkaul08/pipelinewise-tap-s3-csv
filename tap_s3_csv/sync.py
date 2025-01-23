@@ -128,6 +128,8 @@ def sync_table_file(
     )  # pylint:disable=protected-access
 
     records_synced = 0
+    log_interval = 10000
+    last_logged = 0
 
     for row in iterator:
         time_extracted = utils.now()
@@ -150,5 +152,12 @@ def sync_table_file(
 
         write_record(table_name, to_write, time_extracted=time_extracted)
         records_synced += 1
+
+        if records_synced % log_interval == 0:
+            LOGGER.info('Synced %d records from "%s"', records_synced, s3_path)
+            last_logged = records_synced
+
+        if records_synced != last_logged:
+        LOGGER.info('Completed syncing "%s" (%d records)', s3_path, records_synced)
 
     return records_synced
